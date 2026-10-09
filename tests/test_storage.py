@@ -66,7 +66,7 @@ class TestTicketStorage(unittest.TestCase):
         result = self.storage.update_status(1, "closed")
 
         self.assertEqual(result["status"], "closed")
-    
+
     def test_assign_ticket(self):
         self.storage.add_ticket(self.ticket)
 
@@ -79,6 +79,108 @@ class TestTicketStorage(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.storage.assign_ticket(1, "   ")
-    
+
+    def test_filter_tickets_by_status(self):
+        ticket = self.storage.add_ticket({
+            "id": 1,
+            "title": "Wi-Fi down",
+            "category": "Network",
+            "urgency": "high",
+            "affected_users": 15,
+            "priority": "critical",
+            "status": "open",
+            "assigned_to": None,
+        })
+
+        result = self.storage.filter_tickets(status="open")
+
+        self.assertEqual(result, [ticket])
+
+    def test_filter_tickets_by_priority(self):
+        ticket = self.storage.add_ticket({
+            "id": 1,
+            "title": "Wi-Fi down",
+            "category": "Network",
+            "urgency": "high",
+            "affected_users": 15,
+            "priority": "critical",
+            "status": "open",
+            "assigned_to": None,
+        })
+
+        result = self.storage.filter_tickets(priority="critical")
+
+        self.assertEqual(result, [ticket])
+
+    def test_filter_tickets_by_multiple_fields(self):
+        ticket = self.storage.add_ticket({
+            "id": 1,
+            "title": "Wi-Fi down",
+            "category": "Network",
+            "urgency": "high",
+            "affected_users": 15,
+            "priority": "critical",
+            "status": "open",
+            "assigned_to": "Ada",
+        })
+
+        result = self.storage.filter_tickets(
+            status="open",
+            category="Network",
+            assigned_to="Ada",
+        )
+
+        self.assertEqual(result, [ticket])
+
+    def test_filter_tickets_returns_empty_list_when_no_match(self):
+        result = self.storage.filter_tickets(status="closed")
+
+        self.assertEqual(result, [])
+
+    def test_filter_tickets_returns_all_matching_tickets(self):
+        first_ticket = {
+            "id": 1,
+            "title": "Wi-Fi down",
+            "category": "Network",
+            "urgency": "high",
+            "affected_users": 15,
+            "priority": "critical",
+            "status": "open",
+            "assigned_to": None,
+        }
+
+        second_ticket = {
+            "id": 2,
+            "title": "Printer broken",
+            "category": "Hardware",
+            "urgency": "low",
+            "affected_users": 1,
+            "priority": "low",
+            "status": "closed",
+            "assigned_to": None,
+        }
+
+        third_ticket = {
+            "id": 3,
+            "title": "Login failure",
+            "category": "Software",
+            "urgency": "medium",
+            "affected_users": 3,
+            "priority": "medium",
+            "status": "open",
+            "assigned_to": None,
+        }
+
+        self.storage.add_ticket(first_ticket)
+        self.storage.add_ticket(second_ticket)
+        self.storage.add_ticket(third_ticket)
+
+        result = self.storage.filter_tickets(status="open")
+
+        self.assertEqual(
+            [ticket["id"] for ticket in result],
+            [1, 3],
+        )
+
 if __name__ == "__main__":
     unittest.main()

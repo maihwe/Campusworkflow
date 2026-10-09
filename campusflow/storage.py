@@ -52,3 +52,33 @@ class TicketStorage:
 
         ticket["assigned_to"] = staff_name.strip()
         return ticket
+
+
+    def filter_tickets(self, status=None, priority=None, category=None, assigned_to=None):
+        results = self.get_all_tickets()
+
+        if status is not None:
+            results = [
+                ticket for ticket in results
+                if ticket["status"] == status
+            ]
+
+        if priority is not None:
+            results = [
+                ticket for ticket in results
+                if ticket["priority"] == priority
+            ]
+
+        if category is not None:
+            results = [
+                ticket for ticket in results
+                if ticket["category"] == category
+            ]
+
+        if assigned_to is not None:
+            results = [
+                ticket for ticket in results
+                if ticket["assigned_to"] == assigned_to
+            ]
+
+        return results
