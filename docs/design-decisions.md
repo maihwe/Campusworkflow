@@ -1,7 +1,7 @@
 # CampusFlow Design Decisions
 
 ## 1. Programming language
-We use Python 3 because it supports modular programming, JSON handling, and automated testing.
+We use Python3 because it supports modular programming, JSON handling, and automated testing.
 
 ## 2. Project structure
 We separate ticket creation, workflow, storage, and reporting into different modules. This makes the project easier to understand, test, and maintain.
