@@ -1,4 +1,6 @@
-
+import json
+import tempfile
+from pathlib import Path
 import unittest
 
 from campusflow.storage import TicketStorage
@@ -181,6 +183,62 @@ class TestTicketStorage(unittest.TestCase):
             [ticket["id"] for ticket in result],
             [1, 3],
         )
+
+    def test_ticket_persists_after_reloading_storage(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "tickets.json"
+            storage = TicketStorage(path)
+            ticket = create_ticket(
+                1, "Wi-Fi is down", "Network", "high", 15
+            )
+
+            storage.add_ticket(ticket)
+
+            reloaded_storage = TicketStorage(path)
+
+            self.assertEqual(reloaded_storage.get_ticket(1), ticket)
+
+    def test_malformed_json_raises_clear_error(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "tickets.json"
+            path.write_text("{broken", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "Invalid JSON"):
+                TicketStorage(path)
+
+    def test_duplicate_ids_in_json_are_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "tickets.json"
+            ticket = create_ticket(
+                1, "Wi-Fi is down", "Network", "high", 15
+            )
+            path.write_text(
+                json.dumps([ticket, ticket]),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(
+                ValueError, "Duplicate ticket ID"
+            ):
+                TicketStorage(path)
+
+    def test_assignment_persists_after_reloading_storage(self):
+            with tempfile.TemporaryDirectory() as folder:
+                path = Path(folder) / "tickets.json"
+                storage = TicketStorage(path)
+                ticket = create_ticket(
+                1, "Wi-Fi is down", "Network", "high", 15
+            )
+            storage.add_ticket(ticket)
+
+            storage.assign_ticket(1, "Faith")
+
+            reloaded_storage = TicketStorage(path)
+
+            self.assertEqual(
+                reloaded_storage.get_ticket(1)["assigned_to"],
+                "Faith",
+            )
 
 if __name__ == "__main__":
     unittest.main()
