@@ -104,12 +104,29 @@ class TestTicketStorage(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.storage.update_status(1, "pending")
 
-    def test_assign_ticket(self):
+    
+    def test_cannot_reassign_resolved_ticket(self):
         self.storage.add_ticket(self.ticket)
+        self.storage.assign_ticket(1, "Ada")
+        self.storage.update_status(1, "in_progress")
+        self.storage.update_status(1, "resolved")
 
-        result = self.storage.assign_ticket(1, "Ada")
+        with self.assertRaisesRegex(
+            ValueError, "Reopen the ticket before assigning it"
+        ):
+            self.storage.assign_ticket(1, "Faith")
 
-        self.assertEqual(result["assigned_to"], "Ada")
+    def test_cannot_reassign_closed_ticket(self):
+        self.storage.add_ticket(self.ticket)
+        self.storage.assign_ticket(1, "Ada")
+        self.storage.update_status(1, "in_progress")
+        self.storage.update_status(1, "resolved")
+        self.storage.update_status(1, "closed")
+
+        with self.assertRaisesRegex(
+            ValueError, "Reopen the ticket before assigning it"
+        ):
+            self.storage.assign_ticket(1, "Faith")
 
     def test_reject_empty_staff_name(self):
         self.storage.add_ticket(self.ticket)
@@ -257,15 +274,16 @@ class TestTicketStorage(unittest.TestCase):
             ):
                 TicketStorage(path)
 
+    
     def test_assignment_persists_after_reloading_storage(self):
-            with tempfile.TemporaryDirectory() as folder:
-                path = Path(folder) / "tickets.json"
-                storage = TicketStorage(path)
-                ticket = create_ticket(
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "tickets.json"
+            storage = TicketStorage(path)
+
+            ticket = create_ticket(
                 1, "Wi-Fi is down", "Network", "high", 15
             )
             storage.add_ticket(ticket)
-
             storage.assign_ticket(1, "Faith")
 
             reloaded_storage = TicketStorage(path)
@@ -274,6 +292,7 @@ class TestTicketStorage(unittest.TestCase):
                 reloaded_storage.get_ticket(1)["assigned_to"],
                 "Faith",
             )
+
 
 if __name__ == "__main__":
     unittest.main()
