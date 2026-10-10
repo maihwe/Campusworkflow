@@ -44,6 +44,7 @@ class TestTicketService(unittest.TestCase):
             1, "Wi-Fi is down", "Network", "high", 15
         )
 
+        self.service.assign(1, "Ada")
         ticket = self.service.update_status(1, "in_progress")
 
         self.assertEqual(ticket["status"], "in_progress")
@@ -56,6 +57,7 @@ class TestTicketService(unittest.TestCase):
             2, "Printer is broken", "Hardware", "low", 1
         )
 
+        self.service.assign(1, "Ada")
         self.service.update_status(1, "in_progress")
 
         tickets = self.service.filter(status="open")

@@ -51,6 +51,7 @@ class TestTicketStorage(unittest.TestCase):
     def test_update_status_to_in_progress(self):
         self.storage.add_ticket(self.ticket)
 
+        self.storage.assign_ticket(1, "Ada")
         result = self.storage.update_status(1, "in_progress")
 
         self.assertEqual(result["status"], "in_progress")
@@ -63,11 +64,45 @@ class TestTicketStorage(unittest.TestCase):
 
     def test_close_ticket_after_in_progress(self):
         self.storage.add_ticket(self.ticket)
+        self.storage.assign_ticket(1, "Ada")
         self.storage.update_status(1, "in_progress")
+        self.storage.update_status(1, "resolved")
 
         result = self.storage.update_status(1, "closed")
 
         self.assertEqual(result["status"], "closed")
+
+    def test_resolved_ticket_can_be_reopened(self):
+        self.storage.add_ticket(self.ticket)
+        self.storage.assign_ticket(1, "Ada")
+        self.storage.update_status(1, "in_progress")
+        self.storage.update_status(1, "resolved")
+
+        result = self.storage.update_status(1, "open")
+
+        self.assertEqual(result["status"], "open")
+
+    def test_cannot_start_work_without_assignment(self):
+        self.storage.add_ticket(self.ticket)
+
+        with self.assertRaises(ValueError):
+            self.storage.update_status(1, "in_progress")
+
+    def test_closed_ticket_cannot_be_changed(self):
+        self.storage.add_ticket(self.ticket)
+        self.storage.assign_ticket(1, "Ada")
+        self.storage.update_status(1, "in_progress")
+        self.storage.update_status(1, "resolved")
+        self.storage.update_status(1, "closed")
+
+        with self.assertRaises(ValueError):
+            self.storage.update_status(1, "open")
+
+    def test_invalid_status_is_rejected(self):
+        self.storage.add_ticket(self.ticket)
+
+        with self.assertRaises(ValueError):
+            self.storage.update_status(1, "pending")
 
     def test_assign_ticket(self):
         self.storage.add_ticket(self.ticket)

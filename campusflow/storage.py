@@ -63,27 +63,42 @@ class TicketStorage:
 
     
    
+    
     def update_status(self, ticket_id, new_status):
         ticket = self.get_ticket(ticket_id)
 
         if ticket is None:
             raise ValueError("Ticket not found")
 
-        allowed_statuses = ("open", "in_progress", "closed")
+        allowed_transitions = {
+            "open": ("in_progress",),
+            "in_progress": ("resolved",),
+            "resolved": ("open", "closed"),
+            "closed": (),
+        }
 
-        if new_status not in allowed_statuses:
+        if new_status not in allowed_transitions:
             raise ValueError("Invalid ticket status")
 
         current_status = ticket["status"]
 
-        if current_status == "open" and new_status == "closed":
+        if current_status == "closed":
+            raise ValueError("Closed tickets cannot be changed")
+
+        if new_status not in allowed_transitions[current_status]:
             raise ValueError(
-                "Ticket must be in progress before it can be closed"
+                f"Cannot change ticket status from {current_status} to {new_status}"
+            )
+
+        if new_status == "in_progress" and not ticket.get("assigned_to"):
+            raise ValueError(
+                "Ticket must be assigned to a staff member before work begins"
             )
 
         ticket["status"] = new_status
         self._save()
         return ticket
+
 
     def assign_ticket(self, ticket_id, staff_name):
         ticket = self.get_ticket(ticket_id)
