@@ -109,6 +109,11 @@ class TicketStorage:
         if not isinstance(staff_name, str) or not staff_name.strip():
             raise ValueError("Staff name must be a non-empty string")
 
+        if ticket["status"] in ("resolved", "closed"):
+            raise ValueError(
+                "Reopen the ticket before assigning it"
+            )
+
         ticket["assigned_to"] = staff_name.strip()
         self._save()
         return ticket
