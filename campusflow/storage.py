@@ -3,6 +3,8 @@ import os
 import re
 from pathlib import Path
 
+from campusflow.tickets import VALID_CATEGORIES, calculate_priority
+
 
 class TicketStorage:
     def __init__(self, file_path=None):
@@ -63,9 +65,7 @@ class TicketStorage:
             if (
                 not isinstance(ticket["title"], str)
                 or not ticket["title"].strip()
-                or ticket["category"] not in (
-                    "Network", "Hardware", "Software", "Other"
-                )
+                or ticket["category"] not in VALID_CATEGORIES
                 or ticket["urgency"] not in ("low", "medium", "high")
                 or type(ticket["affected_users"]) is not int
                 or ticket["affected_users"] <= 0
@@ -77,6 +77,14 @@ class TicketStorage:
                     )
                 )
             ):
+                raise ValueError("Invalid ticket data in JSON storage")
+
+            expected_priority = calculate_priority(
+                ticket["urgency"],
+                ticket["affected_users"],
+            )
+
+            if ticket["priority"] != expected_priority:
                 raise ValueError("Invalid ticket data in JSON storage")
 
             ticket.setdefault("notes", [])
