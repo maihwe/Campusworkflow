@@ -44,7 +44,7 @@ class TicketStorage:
         for ticket in saved_tickets:
             if (
                 not isinstance(ticket, dict)
-                or not required_fields.issubset(ticket)
+                or not (required_fields - {"notes"}).issubset(ticket)
             ):
                 raise ValueError("Invalid ticket data in JSON storage")
 
@@ -118,6 +118,9 @@ class TicketStorage:
                     raise ValueError(
                         "Invalid ticket data in JSON storage"
                     )
+
+            # Support older tickets created before notes were introduced.
+            ticket.setdefault("notes", [])
 
             # Validate notes.
             notes = ticket["notes"]
