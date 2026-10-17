@@ -47,7 +47,7 @@ class TestTicketNotes(unittest.TestCase):
             "Checked the cable",
         )
 
-        self.assertEqual(result, expected)
+        self.assertEqual(result, expected[0])
 
         reloaded = TicketStorage(self.path)
         self.assertEqual(reloaded.get_notes("T001"), expected)

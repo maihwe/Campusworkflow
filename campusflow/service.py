@@ -21,6 +21,13 @@ class TicketService:
     def assign(self, ticket_id, staff_name):
         return self.storage.assign_ticket(ticket_id, staff_name)
 
+    def add_note(self, ticket_id, author, message):
+        return self.storage.add_note(
+            ticket_id, 
+            author,
+            message,
+        )
+
     def start(self, ticket_id):
         return self.storage.update_status(ticket_id, "in_progress")
 

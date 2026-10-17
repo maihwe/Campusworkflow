@@ -9,7 +9,11 @@ class TestTicketService(unittest.TestCase):
 
     def create_ticket(self):
         return self.service.create(
-            "T001", "Wi-Fi is down", "Network", "high", 15
+            "T001",
+            "Wi-Fi is down",
+            "Network",
+            "high",
+            15,
         )
 
     def test_create_ticket(self):
@@ -20,7 +24,10 @@ class TestTicketService(unittest.TestCase):
 
     def test_get_ticket(self):
         self.create_ticket()
-        self.assertEqual(self.service.get("T001")["title"], "Wi-Fi is down")
+        self.assertEqual(
+            self.service.get("T001")["title"],
+            "Wi-Fi is down",
+        )
 
     def test_get_missing_ticket(self):
         with self.assertRaisesRegex(ValueError, "Ticket not found"):
@@ -29,60 +36,120 @@ class TestTicketService(unittest.TestCase):
     def test_assign_ticket(self):
         self.create_ticket()
         self.assertEqual(
-            self.service.assign("T001", "Ada")["assigned_to"], "Ada"
+            self.service.assign("T001", "Ada")["assigned_to"],
+            "Ada",
+        )
+
+    def test_add_note(self):
+        self.create_ticket()
+
+        note = self.service.add_note(
+            "T001",
+            "Edwin",
+            "Checked the network connection",
+        )
+
+        self.assertEqual(note["note_id"], "N001")
+        self.assertEqual(note["author"], "Edwin")
+        self.assertEqual(
+            note["message"],
+            "Checked the network connection",
         )
 
     def test_update_ticket_status(self):
         self.create_ticket()
         self.service.assign("T001", "Ada")
-        ticket = self.service.update_status("T001", "in_progress")
+
+        ticket = self.service.update_status(
+            "T001",
+            "in_progress",
+        )
+
         self.assertEqual(ticket["status"], "in_progress")
 
     def test_filter_tickets(self):
         self.create_ticket()
-        self.service.create("T002", "Printer is broken", "Hardware", "low", 1)
+
+        self.service.create(
+            "T002",
+            "Printer is broken",
+            "Hardware",
+            "low",
+            1,
+        )
+
         self.service.assign("T001", "Ada")
         self.service.update_status("T001", "in_progress")
 
         tickets = self.service.filter(status="open")
 
-        self.assertEqual([ticket["id"] for ticket in tickets], ["T002"])
+        self.assertEqual(
+            [ticket["id"] for ticket in tickets],
+            ["T002"],
+        )
 
     def test_filter_tickets_by_title(self):
         self.create_ticket()
-        self.service.create("T002", "Printer is broken", "Hardware", "low", 1)
+
+        self.service.create(
+            "T002",
+            "Printer is broken",
+            "Hardware",
+            "low",
+            1,
+        )
 
         tickets = self.service.filter(title="Wi-Fi")
 
-        self.assertEqual([ticket["id"] for ticket in tickets], ["T001"])
+        self.assertEqual(
+            [ticket["id"] for ticket in tickets],
+            ["T001"],
+        )
 
     def test_start_ticket(self):
         self.create_ticket()
         self.service.assign("T001", "Ada")
-        self.assertEqual(self.service.start("T001")["status"], "in_progress")
+
+        self.assertEqual(
+            self.service.start("T001")["status"],
+            "in_progress",
+        )
 
     def test_resolve_ticket(self):
         self.create_ticket()
         self.service.assign("T001", "Ada")
         self.service.start("T001")
-        self.assertEqual(self.service.resolve("T001")["status"], "resolved")
+
+        self.assertEqual(
+            self.service.resolve("T001")["status"],
+            "resolved",
+        )
 
     def test_reopen_ticket(self):
         self.create_ticket()
         self.service.assign("T001", "Ada")
         self.service.start("T001")
         self.service.resolve("T001")
-        self.assertEqual(self.service.reopen("T001")["status"], "open")
+
+        self.assertEqual(
+            self.service.reopen("T001")["status"],
+            "open",
+        )
 
     def test_close_ticket(self):
         self.create_ticket()
         self.service.assign("T001", "Ada")
         self.service.start("T001")
         self.service.resolve("T001")
-        self.assertEqual(self.service.close("T001")["status"], "closed")
+
+        self.assertEqual(
+            self.service.close("T001")["status"],
+            "closed",
+        )
 
     def test_start_ticket_requires_assignment(self):
         self.create_ticket()
+
         with self.assertRaisesRegex(ValueError, "assigned"):
             self.service.start("T001")
 
