@@ -12,9 +12,12 @@ CampusFlow is a Python application for creating, prioritizing, assigning, and tr
 - Add follow-up notes to `open` and `in_progress` tickets.
 - Validate note authors and messages.
 - Generate per-ticket note IDs such as `N001` and `N002`.
-- Search and filter tickets.
+- Search tickets by title with case-insensitive substring matching.
+- Combine title, category, status, and priority filters (all must match).
+- View search results sorted by priority and ticket ID.
 - Sort the open work queue by priority and ticket ID.
-- Generate ticket reports and analytics.
+- Generate ticket reports and analytics, including resolution percentage.
+- Run an interactive Engineering Understanding Check.
 - Save and load ticket data safely using JSON.
 - Validate saved data before replacing in-memory data.
 - Test the application with Python's `unittest` framework.
@@ -40,11 +43,15 @@ Engineer A is responsible for:
 Engineer B is responsible for:
 
 - CLI follow-up note interaction and display.
-- Ticket search and filtering UI.
-- Combined search filters and the optional priority-sorted result view.
-- Reports and analytics display.
-- The Engineering Understanding Check.
+- Ticket search and filtering UI, including combined filters and the optional priority-sorted results view.
+- Reports and analytics, including resolution percentage.
+- The interactive Engineering Understanding Check.
 - Engineer B tests.
+
+The shared note interface is `add_note(ticket_id, author, message)`. It returns
+the ticket's full notes list (so the CLI can display the note just added), and
+`get_notes(ticket_id)` returns a copy of that list. Both raise `ValueError`
+with a friendly message for invalid input.
 
 Both engineers must coordinate shared interfaces and preserve existing CampusFlow behaviour while integrating CampusFlow Next features.
 
@@ -55,6 +62,49 @@ Run the following command from the project root:
 ```bash
 python3 -m unittest discover -s tests -v
 ```
+
+## Run the application
+
+From a fresh clone of the repository:
+
+    git clone <repository-url>
+    cd <repository-folder>
+    python3 main.py
+
+The application needs only Python 3 and the standard library. Ticket data is
+read from and written to `data/tickets.json`.
+
+## Search and filtering
+
+Menu option **11** searches tickets by title and lets you add optional
+category, status, and priority filters:
+
+- Title matching is a case-insensitive substring search (`WI-FI` and `wi-fi`
+  match each other; spelling correction is not attempted).
+- Supplied filters are combined with logical **AND** — every filter must match.
+- Pressing Enter skips a filter. Invalid options re-prompt instead of ending
+  the search.
+- Results show ID, title, category, priority, status, and assignee.
+
+Menu option **14** runs the same search and displays the results sorted by
+priority (critical > high > medium > low) and then by numeric ticket ID. The
+original Open Work Queue (option 9) is unchanged and still lists only `open`
+tickets.
+
+## Reports
+
+Menu option **10** reports total tickets, counts by status, priority, and
+category, the unresolved count (open + in_progress), the resolved count, and
+the resolution percentage (resolved / total * 100). An empty dataset reports
+0% without a division error. Reopened tickets are counted by their current
+status, and each ticket is counted once.
+
+## Engineering Understanding Check
+
+Menu option **15** runs six multiple-choice scenario questions. Only A/B/C/D
+are accepted (invalid answers re-prompt), the score is out of six, and the
+learner is asked to explain at least two answers. Explanations are appended to
+`data/quiz_explanations.txt` for mentor discussion.
 
 ## CLI Menu
 
@@ -169,4 +219,44 @@ Notes can only be added while a ticket is `open` or `in_progress`. A resolved ti
 
 The note author must not be blank. The note message is trimmed and must contain between 5 and 300 characters.
 
-Saved notes are preserved in JSON, and their ID sequence continues correctly after the application reloads.
+Saved notes are preserved in JSON and their ID sequence continues correctly after the application reloads.
+
+`add_note` returns the ticket's complete notes list (with the new note last),
+and rejected notes never consume a note ID.
+
+## JSON storage format
+
+`data/tickets.json` is a JSON list of ticket objects. Each ticket contains
+`id`, `title`, `category`, `urgency`, `affected_users`, `priority`, `status`,
+`assigned_to`, and `notes`. Each note contains `note_id`, `author`, and
+`message`:
+
+```json
+[
+  {
+    "id": "T001",
+    "title": "Campus wifi down",
+    "category": "Network",
+    "urgency": "high",
+    "affected_users": 15,
+    "priority": "critical",
+    "status": "open",
+    "assigned_to": "Ada",
+    "notes": [
+      {
+        "note_id": "N001",
+        "author": "Mentor A",
+        "message": "Wi-Fi router reboot attempted"
+      }
+    ]
+  }
+]
+```
+
+On load, the whole file is validated before it replaces the in-memory
+collection: the structure, required keys, ticket ID format and uniqueness,
+category/urgency/priority consistency, legal statuses, and note shapes and
+per-ticket ID uniqueness. A malformed, corrupt, or duplicate record is
+rejected with a clear `ValueError`, and the current in-memory tickets are left
+untouched. Tickets saved before notes existed are still accepted; a missing
+`notes` list is treated as empty.

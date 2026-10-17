@@ -4,7 +4,14 @@
 We use Python3 because it supports modular programming, JSON handling, and automated testing.
 
 ## 2. Project structure
-We separate ticket creation, workflow, storage, and reporting into different modules. This makes the project easier to understand, test, and maintain.
+We separate ticket creation, workflow, storage, search, reporting, and the
+understanding check into different modules. This makes the project easier to
+understand, test, and maintain.
+
+Search, filtering, and priority sorting live in `campusflow/search.py` as pure
+functions. They never modify the tickets they are given, so they can be tested
+without the CLI. `TicketStorage.filter_tickets` delegates to the same shared
+function so there is only one filtering implementation.
 
 ## 3. Ticket data
 Every ticket will use the same agreed fields:
@@ -51,6 +58,19 @@ We use Python's `unittest` framework. CampusFlow Next requires at least 14 meani
 
 ## 9. Team integration
 Before combining code, both team members must agree on function names, parameters, return values, ticket fields, and error behavior.
+
+Agreed note interface between Engineer A (data layer) and Engineer B (CLI):
+
+- `add_note(ticket_id, author, message)` adds a note and returns the ticket's
+  complete notes list, with the new note last. The CLI shows `notes[-1]`.
+- `get_notes(ticket_id)` returns a copy of the ticket's notes list.
+- Both raise `ValueError` with a clear message for invalid input, and a
+  rejected note never consumes a note ID.
+
+Filtering is owned by Engineer B in `campusflow/search.py`. Supplied filters
+are combined with logical AND; a `None` filter is not applied. Sorting by
+priority uses the numeric part of the ticket ID to break ties, so `T002`
+precedes `T010`.
 
 ## 10. Status of decisions
 These decisions describe the intended design. We will update this document if the implementation or agreed requirements change.

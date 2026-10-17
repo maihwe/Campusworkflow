@@ -1,4 +1,3 @@
-
 import re
 from pathlib import Path
 
@@ -235,7 +234,7 @@ def view_ticket_notes(service):
     """Display a ticket's notes in note ID order."""
     ticket_id = read_ticket_id()
     ticket = service.get(ticket_id)
-    notes = sort_notes_by_id(ticket.get("notes", []))
+    notes = sort_notes_by_id(service.get_notes(ticket_id))
 
     if not notes:
         print(f"\nNo follow-up notes recorded for {ticket_id}.")

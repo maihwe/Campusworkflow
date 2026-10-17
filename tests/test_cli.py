@@ -3,6 +3,7 @@ import io
 import unittest
 from unittest.mock import patch
 
+import main as main_module
 from campusflow.service import TicketService
 from campusflow.storage import TicketStorage
 from campusflow.understanding_check import LETTERS, question_bank
@@ -328,3 +329,22 @@ class TestUnderstandingCheckCli(CliTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestMenu(unittest.TestCase):
+    def test_invalid_choice_is_reported_before_exit(self):
+        memory_storage = TicketStorage()
+
+        with patch("builtins.input", side_effect=["99", "0"]):
+            with patch("builtins.print") as printed:
+                with patch.object(
+                    main_module,
+                    "TicketStorage",
+                    return_value=memory_storage,
+                ):
+                    main_module.main()
+
+        messages = " ".join(
+            str(call) for call in printed.call_args_list
+        )
+        self.assertIn("Invalid option", messages)
