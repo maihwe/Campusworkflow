@@ -3,86 +3,75 @@
 
 ## 1. Purpose
 
-This document records the original CampusFlow baseline, historical test evidence, and verification tasks for CampusFlow Next.
+This document preserves the historical CampusFlow baseline record and provides a verification checklist for CampusFlow Next.
 
-The original baseline document was committed in Git commit `1a0166e` on 15 October 2026. It is preserved at the repository root as `baseline-check.md`.
+Historical test results and implementation notes are retained for reference. They do not prove that the current conflict-resolution branch or final integrated code passes.
 
 ## 2. Historical Baseline Test Record
 
-The original baseline document recorded this command:
+The original baseline document recorded the following command:
 
 ```bash
 python3 -m unittest discover -s test -v
 ```
 
-Recorded result:
+Recorded result: 99 tests in 0.090s, OK.
 
-```text
-Ran 99 test in 0.090s
-
-OK
-```
-
-The historical command uses `test`, while the repository contains a `tests/` directory. This result is preserved as recorded and is not presented as independently verified evidence.
-
-## 3. Independently Verified Baseline
+The command used `test`, while the repository contains a `tests/` directory. This result is preserved as a historical record and has not been independently verified here.
 
 The baseline parent commit was:
 
 `f6c4d1fd85d7d63c0b5565b0eb11db77d0fbbcb6`
 
-The original code at this commit was tested in a separate Git worktree using:
+A separate worktree was tested using:
 
 ```bash
 python3 -m unittest discover -s tests -v
 ```
 
-Verified historical result:
+The recorded historical result was 112 tests in 0.029s, OK. This result applies to that baseline parent commit, not the current merge.
 
-```text
-Ran 112 tests in 0.029s
+A later development note recorded 114 tests. An earlier integration record also reported 163 tests passing, including a fresh-clone run. These counts are historical evidence only and must not be presented as the result of a new test run.
 
-OK
-```
+The original baseline document was recorded as committed in Git commit `1a0166e` on 15 October 2026 and preserved at the repository root as `baseline-check.md`.
 
-This result applies to the baseline parent commit, not the final CampusFlow Next integration.
+## 3. Historical Baseline Observations
 
-## 4. Baseline Inputs and Observations
+The original baseline record reported that:
 
-### Valid ticket creation
+- Valid tickets could be created and their priority calculated.
+- Invalid affected-user values were rejected.
+- Ticket assignment was supported.
+- Workflow status changes were supported.
 
-The original baseline record reported that valid tickets could be created and their priority calculated.
+These are historical observations, not newly performed manual tests for this merge.
 
-### Invalid affected-user values
+## 4. CampusFlow Next Feature Verification Plan
 
-The original baseline record reported that invalid affected-user values were rejected. This observation was not independently reproduced during the test run in Section 3.
-
-### Ticket workflow
-
-The original baseline record reported support for ticket assignment and workflow status changes. This is a historical observation, not a newly performed manual test.
-
-## 5. CampusFlow Next Feature Verification Plan
-
-Complete each item only after testing the behaviour on the integrated version.
+The following features must be checked against the final integrated project:
 
 - [ ] Search tickets by title using case-insensitive substring matching.
 - [ ] Combine title, category, status, priority, and assignee filters.
-- [ ] Verify combined filters return tickets matching all supplied filters.
-- [ ] View search results sorted by priority and numeric ticket ID.
+- [ ] Confirm combined filters return tickets matching all supplied filters.
+- [ ] Verify search results are sorted by priority and numeric ticket ID.
 - [ ] Confirm the open work queue lists only open tickets.
 - [ ] Generate reports with status, priority, and category counts.
-- [ ] Verify unresolved/resolved counts and resolution percentage, including an empty ticket list.
-- [ ] Add and view ticket notes through the CLI.
-- [ ] Verify note persistence after JSON storage reloads.
+- [ ] Verify unresolved and resolved counts and resolution percentage.
+- [ ] Verify reports handle an empty ticket list correctly.
+- [ ] Add ticket notes through the CLI.
+- [ ] View ticket notes through the CLI.
+- [ ] Verify notes persist after JSON storage is reloaded.
 - [ ] Verify notes cannot be added to resolved or closed tickets.
-- [ ] Verify invalid quiz answers are rejected and the user is prompted again.
 - [ ] Verify the six-question Engineering Understanding Check.
-- [ ] Verify quiz scoring is out of six.
-- [ ] Verify explanations for at least two answers are saved for discussion.
+- [ ] Accept only A/B/C/D quiz answers and retry invalid input.
+- [ ] Verify the quiz score is calculated out of six.
+- [ ] Verify explanations for at least two quiz answers are saved for mentor discussion.
 
-## 6. Automated Test Verification
+Do not mark an item complete until the behaviour has been checked on the integrated code.
 
-Run the complete test suite from the project root:
+## 5. Automated Test Verification
+
+From the project root, run the complete test suite:
 
 ```bash
 python3 -m unittest discover -s tests -v
@@ -94,51 +83,36 @@ Record the actual result from the final integrated version:
 - Number of tests run: To be recorded after execution.
 - Result: To be recorded after execution.
 
-Do not substitute historical test counts for the result of the final integrated version.
+Do not substitute a historical test count for the actual result of the final integrated version.
 
-## 7. Historical Feature Verification Record
+## 6. Manual Checks Still Required
 
-An earlier integration record reported these features as implemented:
-
-- Ticket search and combined filtering.
-- Priority-sorted search results.
-- Reports with status, priority, and category counts.
-- Unresolved/resolved counts and resolution percentage.
-- CLI support for adding and viewing ticket notes.
-- JSON persistence of ticket notes.
-- A six-question Engineering Understanding Check.
-- Quiz answer validation and explanation collection.
-
-An earlier integration record also reported **163 tests passing**, including a fresh-clone run. This is historical evidence only; it does not establish that the current conflict-resolution branch passes.
-
-## 8. Manual Checks Still Required
-
-- [ ] Run the CLI and verify the actual menu options and their behaviour.
+- [ ] Run the CLI and verify the search, add-note, view-notes, and understanding-check menu options.
 - [ ] Test invalid quiz input and confirm the program retries.
-- [ ] Complete the quiz and verify the explanation file is written correctly.
+- [ ] Complete the quiz and verify explanations are saved as expected.
 - [ ] Run the complete test suite after resolving all conflicts.
 - [ ] Review the final changes before submitting the pull request.
-- [ ] Verify the integrated project on the intended repository.
+- [ ] Verify the integrated project in the intended repository.
 
-## 9. Improvements and Reliability Requirements
+## 7. Reliability Requirements
 
-The baseline review identified these areas for implementation or stronger verification:
+The baseline review identified the following behaviours to implement or verify:
 
 - Add follow-up notes to tickets.
 - Validate note authors and messages.
 - Generate note IDs independently for each ticket.
-- Prevent notes from being added to resolved tickets.
-- Validate persisted JSON before replacing in-memory data.
+- Prevent notes from being added to resolved or closed tickets.
+- Validate persisted JSON before replacing in-memory ticket data.
 - Reject duplicate or malformed ticket and note data during loading.
 - Preserve in-memory data when saving fails.
 - Preserve ticket and note ID continuity after saving and reloading.
 - Add combined search, filtering, richer reports, and the understanding check.
 - Preserve existing CampusFlow behaviour while introducing new features.
 
-## 10. Evidence and Limitations
+## 8. Evidence and Limitations
 
-The 99-test result and baseline observations were retained from the original historical document. The 112-test result was independently verified at the baseline parent commit in a separate Git worktree.
+The repository-root `baseline-check.md` is a separate file from this assessment document at `docs/baseline-check.md`.
 
-The 163-test result was reported in an earlier integration record. Neither historical test count proves that the current merge-resolution branch passes.
+The historical results of 99, 112, 114, and 163 tests refer to earlier records. They do not establish that the current conflict-resolution branch passes.
 
-The checklist in this document is a verification plan. Do not mark items complete until the corresponding behaviour has been tested on the integrated code.
+This document is a verification plan and historical record. The final integrated code must be tested independently before submission.

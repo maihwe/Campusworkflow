@@ -1,18 +1,4 @@
-
 QUESTIONS = [
-    {
-        "question": (
-            "Ticket T001 is open and unassigned. A user tries to move it "
-            "to in_progress. What should happen?"
-        ),
-        "options": {
-            "A": "Accept the change",
-            "B": "Reject it and preserve all data",
-            "C": "Resolve it automatically",
-            "D": "Remove the ticket",
-        },
-        "answer": "B",
-    },
     {
         "question": "What should happen when a ticket ID does not exist?",
         "options": {
@@ -37,29 +23,6 @@ QUESTIONS = [
         "answer": "C",
     },
     {
-        "question": "Why save ticket notes to JSON storage?",
-        "options": {
-            "A": "To make notes disappear after exit",
-            "B": "To change every ticket's priority",
-            "C": "To preserve notes when the application restarts",
-            "D": "To prevent users from viewing notes",
-        },
-        "answer": "C",
-    },
-    {
-        "question": (
-            "Search with title='wifi', category='Network' and status='open'. "
-            "Which records should match?"
-        ),
-        "options": {
-            "A": "Any record matching one filter",
-            "B": "Only records matching all supplied filters",
-            "C": "All Network records",
-            "D": "All open records",
-        },
-        "answer": "B",
-    },
-    {
         "question": "What does a combined filter do?",
         "options": {
             "A": "Matches tickets that satisfy all supplied filters",
@@ -68,16 +31,6 @@ QUESTIONS = [
             "D": "Ignores the title filter",
         },
         "answer": "A",
-    },
-    {
-        "question": "A resolved ticket receives 'Add note'. What should happen?",
-        "options": {
-            "A": "Append the note anyway",
-            "B": "Delete the old notes",
-            "C": "Reject until the ticket is reopened",
-            "D": "Change the status silently",
-        },
-        "answer": "C",
     },
     {
         "question": "Why should a failed note save be handled safely?",
@@ -103,29 +56,6 @@ QUESTIONS = [
         "answer": "C",
     },
     {
-        "question": "What should the program do when a menu choice is invalid?",
-        "options": {
-            "A": "Exit immediately every time",
-            "B": "Explain the choice is invalid and ask again",
-            "C": "Run a random menu action",
-            "D": "Clear the ticket storage",
-        },
-        "answer": "B",
-    },
-    {
-        "question": (
-            "A pull request changes validation but adds no negative-case "
-            "tests. What is the best review action?"
-        ),
-        "options": {
-            "A": "Approve it because it runs",
-            "B": "Request focused tests and reasoning",
-            "C": "Merge it immediately",
-            "D": "Ask AI to approve it",
-        },
-        "answer": "B",
-    },
-    {
         "question": "Why keep quiz scoring separate from displaying questions?",
         "options": {
             "A": "So the score can never be calculated",
@@ -139,9 +69,9 @@ QUESTIONS = [
 
 
 def score_answers(answers):
-    """Return the number of correct answers out of twelve."""
-    if len(answers) != len(QUESTIONS):
-        raise ValueError("Exactly twelve answers are required.")
+    """Return the number of correct answers out of six."""
+    if len(answers) != 6:
+        raise ValueError("Exactly six answers are required.")
 
     return sum(
         answer == question["answer"]

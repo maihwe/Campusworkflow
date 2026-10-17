@@ -1,7 +1,9 @@
+
 import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from campusflow.storage import TicketStorage
 
@@ -44,8 +46,10 @@ class TestTicketNotes(unittest.TestCase):
             "Checked the cable",
         )
 
+        # add_note returns one note dictionary.
         self.assertEqual(result, expected)
 
+        # get_notes returns a list of note dictionaries.
         reloaded = TicketStorage(self.path)
         self.assertEqual(reloaded.get_notes("T001"), [expected])
 
@@ -149,6 +153,28 @@ class TestTicketNotes(unittest.TestCase):
 
     def test_ticket_without_notes_starts_with_empty_list(self):
         self.assertEqual(self.storage.get_notes("T001"), [])
+
+    def test_failed_save_rolls_back_note(self):
+        original_json = self.path.read_text(encoding="utf-8")
+
+        with patch(
+            "campusflow.storage.os.replace",
+            side_effect=OSError("Simulated replacement failure"),
+        ):
+            with self.assertRaisesRegex(
+                OSError, "Simulated replacement failure"
+            ):
+                self.storage.add_note(
+                    "T001",
+                    "Faith",
+                    "Checked the cable",
+                )
+
+        self.assertEqual(self.storage.get_notes("T001"), [])
+        self.assertEqual(
+            self.path.read_text(encoding="utf-8"),
+            original_json,
+        )
 
 
 if __name__ == "__main__":

@@ -384,6 +384,36 @@ class TestTicketStorage(unittest.TestCase):
             ):
                 TicketStorage(path)
 
+    def test_invalid_priority_in_json_is_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "tickets.json"
+            ticket = create_ticket(
+                "T001", "Wi-Fi is down", "Network", "high", 15
+            )
+            ticket["priority"] = "low"
+
+            path.write_text(json.dumps([ticket]), encoding="utf-8")
+
+            with self.assertRaisesRegex(
+                ValueError, "Invalid ticket data"
+            ):
+                TicketStorage(path)
+
+    def test_invalid_category_in_json_is_rejected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "tickets.json"
+            ticket = create_ticket(
+                "T001", "Wi-Fi is down", "Network", "high", 15
+            )
+            ticket["category"] = "Invalid category"
+
+            path.write_text(json.dumps([ticket]), encoding="utf-8")
+
+            with self.assertRaisesRegex(
+                ValueError, "Invalid ticket data"
+            ):
+                TicketStorage(path)
+
     def test_invalid_status_in_json_is_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "tickets.json"
@@ -429,38 +459,53 @@ class TestTicketStorage(unittest.TestCase):
             ):
                 TicketStorage(path)
 
+    def test_failed_reload_preserves_existing_tickets(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "tickets.json"
+            self.storage.add_ticket(self.ticket)
+            original_ticket = self.storage.get_ticket("T001").copy()
+
+            path.write_text(json.dumps([self.ticket, self.ticket]), encoding="utf-8")
+            self.storage.file_path = path
+
+            with self.assertRaisesRegex(ValueError, "Duplicate ticket ID"):
+                self.storage._load()
+
+            self.assertEqual(self.storage.get_ticket("T001"), original_ticket)
+            self.assertEqual(len(self.storage.get_all_tickets()), 1)
+
+    def test_malformed_reload_preserves_existing_tickets(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "tickets.json"
+            self.storage.add_ticket(self.ticket)
+            original_ticket = self.storage.get_ticket("T001").copy()
+
+            path.write_text("{invalid json", encoding="utf-8")
+            self.storage.file_path = path
+
+            with self.assertRaisesRegex(ValueError, "Invalid JSON"):
+                self.storage._load()
+
+            self.assertEqual(self.storage.get_ticket("T001"), original_ticket)
+            self.assertEqual(len(self.storage.get_all_tickets()), 1)
+
     def test_old_ticket_without_notes_loads_with_empty_notes(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "tickets.json"
-
             ticket = create_ticket(
-                "T001",
-                "Wi-Fi is down",
-                "Network",
-                "high",
-                15,
+                "T001", "Wi-Fi is down", "Network", "high", 15
             )
             ticket.pop("notes", None)
-
             path.write_text(json.dumps([ticket]), encoding="utf-8")
 
             storage = TicketStorage(path)
-
-            self.assertEqual(
-                storage.get_ticket("T001")["notes"],
-                [],
-            )
+            self.assertEqual(storage.get_ticket("T001")["notes"], [])
 
     def test_duplicate_note_ids_in_json_are_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "tickets.json"
-
             ticket = create_ticket(
-                "T001",
-                "Wi-Fi is down",
-                "Network",
-                "high",
-                15,
+                "T001", "Wi-Fi is down", "Network", "high", 15
             )
             ticket["notes"] = [
                 {
@@ -474,25 +519,16 @@ class TestTicketStorage(unittest.TestCase):
                     "message": "Second network update",
                 },
             ]
-
             path.write_text(json.dumps([ticket]), encoding="utf-8")
 
-            with self.assertRaisesRegex(
-                ValueError,
-                "Duplicate note ID",
-            ):
+            with self.assertRaisesRegex(ValueError, "Duplicate note ID"):
                 TicketStorage(path)
 
     def test_invalid_note_message_in_json_is_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "tickets.json"
-
             ticket = create_ticket(
-                "T001",
-                "Wi-Fi is down",
-                "Network",
-                "high",
-                15,
+                "T001", "Wi-Fi is down", "Network", "high", 15
             )
             ticket["notes"] = [
                 {
@@ -501,35 +537,25 @@ class TestTicketStorage(unittest.TestCase):
                     "message": "Hi",
                 },
             ]
-
             path.write_text(json.dumps([ticket]), encoding="utf-8")
 
-            with self.assertRaisesRegex(
-                ValueError,
-                "Invalid note data",
-            ):
+            with self.assertRaisesRegex(ValueError, "Invalid note data"):
                 TicketStorage(path)
 
     def test_failed_reload_preserves_existing_tickets_in_memory(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "tickets.json"
             storage = TicketStorage(path)
-
             storage.add_ticket(self.ticket)
             original_tickets = storage.get_all_tickets()
 
             path.write_text("{broken", encoding="utf-8")
 
-            with self.assertRaisesRegex(
-                ValueError,
-                "Invalid JSON",
-            ):
+            with self.assertRaisesRegex(ValueError, "Invalid JSON"):
                 storage._load()
 
-            self.assertEqual(
-                storage.get_all_tickets(),
-                original_tickets,
-            )
+            self.assertEqual(storage.get_all_tickets(), original_tickets)
+
 
     def test_assignment_persists_after_reloading_storage(self):
         with tempfile.TemporaryDirectory() as folder:

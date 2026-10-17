@@ -95,6 +95,7 @@ class TicketStorage:
                 raise ValueError("Invalid ticket data in JSON storage")
 
             assigned_to = ticket["assigned_to"]
+
             if assigned_to is not None and (
                 not isinstance(assigned_to, str)
                 or not assigned_to.strip()
@@ -102,6 +103,7 @@ class TicketStorage:
                 raise ValueError("Invalid ticket data in JSON storage")
 
             notes = ticket["notes"]
+
             if not isinstance(notes, list):
                 raise ValueError("Ticket notes must be a list")
 
@@ -133,7 +135,7 @@ class TicketStorage:
 
             validated_tickets[ticket_id] = ticket
 
-        # Replace current memory only after the whole file is valid.
+        # Update memory only after every saved ticket has been validated.
         self.tickets = validated_tickets
 
     def _save(self):
@@ -141,6 +143,7 @@ class TicketStorage:
             return
 
         self.file_path.parent.mkdir(parents=True, exist_ok=True)
+
         temp_path = self.file_path.with_suffix(
             self.file_path.suffix + ".tmp"
         )
@@ -152,6 +155,9 @@ class TicketStorage:
                     file,
                     indent=2,
                 )
+                file.write("\n")
+                file.flush()
+                os.fsync(file.fileno())
 
             os.replace(temp_path, self.file_path)
 

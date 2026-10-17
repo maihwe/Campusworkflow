@@ -1,4 +1,3 @@
-
 from campusflow.tickets import create_ticket
 from campusflow.storage import TicketStorage
 
