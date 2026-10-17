@@ -1,72 +1,118 @@
+
 # CampusFlow Next — Baseline Check
 
 ## 1. Purpose
 
-This document combines the CampusFlow Next feature checklist with the historical baseline record. Historical results are not evidence that the current merged code passes.
+This document preserves the historical CampusFlow baseline record and provides a verification checklist for CampusFlow Next.
 
-## 2. Historical baseline results
+Historical test results and implementation notes are retained for reference. They do not prove that the current conflict-resolution branch or final integrated code passes.
 
-The original baseline document recorded a run using:
+## 2. Historical Baseline Test Record
 
-    python3 -m unittest discover -s test -v
+The original baseline document recorded the following command:
 
-Recorded result: 99 tests in 0.090s, OK. The command used `test` although the repository contains a `tests/` directory, so this is retained only as a historical record.
+```bash
+python3 -m unittest discover -s test -v
+```
 
-The baseline parent commit was `f6c4d1fd85d7d63c0b5565b0eb11db77d0fbbcb6`. A separate worktree was tested with:
+Recorded result: 99 tests in 0.090s, OK.
 
-    python3 -m unittest discover -s tests -v
+The command used `test`, while the repository contains a `tests/` directory. This result is preserved as a historical record and has not been independently verified here.
 
-Verified historical result: 112 tests in 0.029s, OK. This result applies to that baseline commit, not the current merge.
+The baseline parent commit was:
 
-## 3. CampusFlow Next feature verification
+`f6c4d1fd85d7d63c0b5565b0eb11db77d0fbbcb6`
 
-The original feature checklist records these items as implemented. Recheck them against the final integrated project before submission.
+A separate worktree was tested using:
 
-- [x] Search tickets by title.
-- [x] Combine title, category, status, and priority filters.
-- [x] Generate reports and handle an empty ticket list.
-- [x] Add ticket notes through the CLI.
-- [x] View ticket notes through the CLI.
-- [x] Persist notes through JSON storage reloads.
-- [x] Provide a six-question Engineering Understanding Check.
-- [x] Accept only A/B/C/D quiz answers and retry invalid input.
-- [x] Calculate a score out of six.
-- [x] Save explanations for at least two quiz answers for mentor discussion.
+```bash
+python3 -m unittest discover -s tests -v
+```
 
-## 4. Automated tests to run
+The recorded historical result was 112 tests in 0.029s, OK. This result applies to that baseline parent commit, not the current merge.
 
-From the project root, run:
+A later development note recorded 114 tests. An earlier integration record also reported 163 tests passing, including a fresh-clone run. These counts are historical evidence only and must not be presented as the result of a new test run.
 
-    python3 -m unittest discover -s tests -v
+The original baseline document was recorded as committed in Git commit `1a0166e` on 15 October 2026 and preserved at the repository root as `baseline-check.md`.
 
-A development note recorded 114 tests during development. Confirm the actual result on the final integrated code before submission; do not treat that note as a current test result.
+## 3. Historical Baseline Observations
 
-## 5. Manual checks still required
+The original baseline record reported that:
+
+- Valid tickets could be created and their priority calculated.
+- Invalid affected-user values were rejected.
+- Ticket assignment was supported.
+- Workflow status changes were supported.
+
+These are historical observations, not newly performed manual tests for this merge.
+
+## 4. CampusFlow Next Feature Verification Plan
+
+The following features must be checked against the final integrated project:
+
+- [ ] Search tickets by title using case-insensitive substring matching.
+- [ ] Combine title, category, status, priority, and assignee filters.
+- [ ] Confirm combined filters return tickets matching all supplied filters.
+- [ ] Verify search results are sorted by priority and numeric ticket ID.
+- [ ] Confirm the open work queue lists only open tickets.
+- [ ] Generate reports with status, priority, and category counts.
+- [ ] Verify unresolved and resolved counts and resolution percentage.
+- [ ] Verify reports handle an empty ticket list correctly.
+- [ ] Add ticket notes through the CLI.
+- [ ] View ticket notes through the CLI.
+- [ ] Verify notes persist after JSON storage is reloaded.
+- [ ] Verify notes cannot be added to resolved or closed tickets.
+- [ ] Verify the six-question Engineering Understanding Check.
+- [ ] Accept only A/B/C/D quiz answers and retry invalid input.
+- [ ] Verify the quiz score is calculated out of six.
+- [ ] Verify explanations for at least two quiz answers are saved for mentor discussion.
+
+Do not mark an item complete until the behaviour has been checked on the integrated code.
+
+## 5. Automated Test Verification
+
+From the project root, run the complete test suite:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Record the actual result from the final integrated version:
+
+- Test command: `python3 -m unittest discover -s tests -v`
+- Number of tests run: To be recorded after execution.
+- Result: To be recorded after execution.
+
+Do not substitute a historical test count for the actual result of the final integrated version.
+
+## 6. Manual Checks Still Required
 
 - [ ] Run the CLI and verify the search, add-note, view-notes, and understanding-check menu options.
 - [ ] Test invalid quiz input and confirm the program retries.
-- [ ] Complete the quiz and verify that explanations are saved as expected.
-- [ ] Run the complete test suite again before submitting the pull request.
-- [ ] Verify the integrated project on the intended repository after partner review and merge.
+- [ ] Complete the quiz and verify explanations are saved as expected.
+- [ ] Run the complete test suite after resolving all conflicts.
+- [ ] Review the final changes before submitting the pull request.
+- [ ] Verify the integrated project in the intended repository.
 
-## 6. Historical baseline observations
+## 7. Reliability Requirements
 
-The original baseline record reported that valid tickets could be created and their priority calculated, invalid affected-user values were rejected, and ticket assignment and workflow status changes were supported. These are historical observations, not newly performed manual tests for this merge.
-
-## 7. Improvements identified
+The baseline review identified the following behaviours to implement or verify:
 
 - Add follow-up notes to tickets.
 - Validate note authors and messages.
 - Generate note IDs independently for each ticket.
-- Prevent notes from being added to resolved tickets.
+- Prevent notes from being added to resolved or closed tickets.
 - Validate persisted JSON before replacing in-memory ticket data.
 - Reject duplicate or malformed ticket and note data during loading.
-- Preserve data when saving fails.
+- Preserve in-memory data when saving fails.
 - Preserve ticket and note ID continuity after saving and reloading.
-- Keep existing CampusFlow behaviour working while adding features.
+- Add combined search, filtering, richer reports, and the understanding check.
+- Preserve existing CampusFlow behaviour while introducing new features.
 
-## 8. Evidence and limitations
+## 8. Evidence and Limitations
 
-The repository-root `baseline-check.md` remains a separate file. This is the assessment copy under `docs/baseline-check.md`.
+The repository-root `baseline-check.md` is a separate file from this assessment document at `docs/baseline-check.md`.
 
-The 99-test result and baseline observations are historical records. The 112-test result was independently verified at the baseline parent commit in a separate worktree. Neither historical result replaces a fresh test run on the final integrated code.
+The historical results of 99, 112, 114, and 163 tests refer to earlier records. They do not establish that the current conflict-resolution branch passes.
+
+This document is a verification plan and historical record. The final integrated code must be tested independently before submission.

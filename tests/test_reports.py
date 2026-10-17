@@ -1,6 +1,8 @@
 import unittest
 
 from campusflow.reports import generate_report
+from campusflow.service import TicketService
+from campusflow.storage import TicketStorage
 
 
 def make_ticket(
@@ -23,16 +25,35 @@ def make_ticket(
     }
 
 
-class TestReportTotals(unittest.TestCase):
-    def test_empty_report_returns_zero_percent_without_crashing(self):
+class TestReports(unittest.TestCase):
+    def test_empty_report_counts_and_percentage_are_zero(self):
         report = generate_report([])
 
         self.assertEqual(report["total"], 0)
-        self.assertEqual(report["resolution_percentage"], 0)
         self.assertEqual(report["unresolved_count"], 0)
         self.assertEqual(report["resolved_count"], 0)
+        self.assertEqual(report["resolution_percentage"], 0)
 
-    def test_counts_by_category(self):
+    def test_counts_follow_status_after_resolve_and_reopen(self):
+        service = TicketService(TicketStorage())
+        service.create("T001", "Wi-Fi down", "Network", "high", 15)
+        service.assign("T001", "Ada")
+        service.start("T001")
+        service.resolve("T001")
+
+        resolved = generate_report(service.get_all())
+        self.assertEqual(resolved["resolved_count"], 1)
+        self.assertEqual(resolved["unresolved_count"], 0)
+        self.assertEqual(resolved["resolution_percentage"], 100.0)
+
+        service.reopen("T001")
+
+        reopened = generate_report(service.get_all())
+        self.assertEqual(reopened["resolved_count"], 0)
+        self.assertEqual(reopened["unresolved_count"], 1)
+        self.assertEqual(reopened["resolution_percentage"], 0)
+
+    def test_categories_are_counted_correctly(self):
         tickets = [
             make_ticket("T001", "Network"),
             make_ticket("T002", "Hardware"),
@@ -47,20 +68,7 @@ class TestReportTotals(unittest.TestCase):
             {"Network": 1, "Hardware": 2, "Software": 0, "Other": 1},
         )
 
-    def test_unresolved_count_adds_open_and_in_progress(self):
-        tickets = [
-            make_ticket("T001", status="open"),
-            make_ticket("T002", status="in_progress"),
-            make_ticket("T003", status="resolved"),
-            make_ticket("T004", status="closed"),
-        ]
-
-        report = generate_report(tickets)
-
-        self.assertEqual(report["unresolved_count"], 2)
-        self.assertEqual(report["resolved_count"], 1)
-
-    def test_status_counts_never_double_count_a_ticket(self):
+    def test_status_counts_do_not_overlap(self):
         tickets = [
             make_ticket("T001", status="open"),
             make_ticket("T002", status="in_progress"),
@@ -72,37 +80,18 @@ class TestReportTotals(unittest.TestCase):
 
         self.assertEqual(report["total"], 4)
         self.assertEqual(sum(report["by_status"].values()), 4)
+        self.assertEqual(report["unresolved_count"], 2)
+        self.assertEqual(report["resolved_count"], 1)
 
-    def test_resolution_percentage_after_resolve_and_reopen(self):
+    def test_resolution_percentage_for_partial_resolution(self):
         tickets = [
-            make_ticket("T001", status="open"),
-            make_ticket("T002", status="in_progress"),
+            make_ticket("T001", status="resolved"),
+            make_ticket("T002", status="open"),
         ]
 
-        resolved = generate_report(
-            [tickets[0], make_ticket("T002", status="resolved")]
-        )
+        report = generate_report(tickets)
 
-        self.assertEqual(resolved["resolution_percentage"], 50.0)
-
-        reopened = generate_report(
-            [make_ticket("T001", status="open"), tickets[1]]
-        )
-
-        self.assertEqual(reopened["resolved_count"], 0)
-        self.assertEqual(reopened["unresolved_count"], 2)
-        self.assertEqual(reopened["resolution_percentage"], 0.0)
-
-    def test_report_uses_the_current_status_not_the_oldest_status(self):
-        refreshed = [
-            make_ticket("T001", status="open"),
-            make_ticket("T002", status="resolved"),
-        ]
-
-        report = generate_report(refreshed)
-
-        self.assertEqual(report["by_status"]["resolved"], 1)
-        self.assertEqual(report["by_status"]["open"], 1)
+        self.assertEqual(report["resolution_percentage"], 50.0)
 
     def test_rejects_non_list_input(self):
         with self.assertRaisesRegex(ValueError, "Tickets must be a list"):

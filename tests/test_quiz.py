@@ -7,6 +7,12 @@ class TestEngineeringQuiz(unittest.TestCase):
     def test_question_bank_contains_six_questions(self):
         self.assertEqual(len(QUESTIONS), 6)
 
+    def test_answer_key_matches_documented_bank(self):
+        self.assertEqual(
+            [question["answer"] for question in QUESTIONS],
+            ["B", "C", "B", "C", "C", "B"],
+        )
+
     def test_all_correct_answers_score_six(self):
         answers = [question["answer"] for question in QUESTIONS]
         self.assertEqual(score_answers(answers), 6)

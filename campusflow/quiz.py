@@ -10,12 +10,15 @@ QUESTIONS = [
         "answer": "B",
     },
     {
-        "question": "Why save ticket notes to JSON storage?",
+        "question": (
+            "The application has zero tickets. What should the resolution "
+            "percentage display?"
+        ),
         "options": {
-            "A": "To make notes disappear after exit",
-            "B": "To change every ticket's priority",
-            "C": "To preserve notes when the application restarts",
-            "D": "To prevent users from viewing notes",
+            "A": "Crash",
+            "B": "100%",
+            "C": "0%",
+            "D": "Divide by one without explanation",
         },
         "answer": "C",
     },
@@ -40,14 +43,17 @@ QUESTIONS = [
         "answer": "D",
     },
     {
-        "question": "What should the program do when a menu choice is invalid?",
+        "question": (
+            "The JSON file contains two tickets with the same ID. What "
+            "should loading do?"
+        ),
         "options": {
-            "A": "Exit immediately every time",
-            "B": "Explain the choice is invalid and ask again",
-            "C": "Run a random menu action",
-            "D": "Clear the ticket storage",
+            "A": "Keep both",
+            "B": "Replace memory with the duplicates",
+            "C": "Reject the load without changing current memory",
+            "D": "Rename the IDs silently",
         },
-        "answer": "B",
+        "answer": "C",
     },
     {
         "question": "Why keep quiz scoring separate from displaying questions?",
@@ -64,7 +70,7 @@ QUESTIONS = [
 
 def score_answers(answers):
     """Return the number of correct answers out of six."""
-    if len(answers) != len(QUESTIONS):
+    if len(answers) != 6:
         raise ValueError("Exactly six answers are required.")
 
     return sum(
