@@ -1,4 +1,4 @@
-
+```python
 import json
 import os
 import re
@@ -46,7 +46,10 @@ class TicketStorage:
             if not isinstance(saved_ticket, dict):
                 raise ValueError("Invalid ticket data in JSON storage")
 
+            # Copy each ticket so validation does not modify the loaded object.
             ticket = dict(saved_ticket)
+
+            # Support older tickets created before notes were introduced.
             ticket.setdefault("notes", [])
 
             if not required_fields.issubset(ticket):
@@ -95,13 +98,16 @@ class TicketStorage:
                 raise ValueError("Invalid ticket data in JSON storage")
 
             assigned_to = ticket["assigned_to"]
+
             if assigned_to is not None and (
                 not isinstance(assigned_to, str)
                 or not assigned_to.strip()
             ):
                 raise ValueError("Invalid ticket data in JSON storage")
 
+            # Validate notes.
             notes = ticket["notes"]
+
             if not isinstance(notes, list):
                 raise ValueError("Ticket notes must be a list")
 
@@ -141,6 +147,7 @@ class TicketStorage:
             return
 
         self.file_path.parent.mkdir(parents=True, exist_ok=True)
+
         temp_path = self.file_path.with_suffix(
             self.file_path.suffix + ".tmp"
         )
@@ -152,6 +159,8 @@ class TicketStorage:
                     file,
                     indent=2,
                 )
+                file.flush()
+                os.fsync(file.fileno())
 
             os.replace(temp_path, self.file_path)
 
@@ -349,3 +358,4 @@ class TicketStorage:
             priority=priority,
             assigned_to=assigned_to,
         )
+```
