@@ -1,3 +1,4 @@
+
 [
   {
     "id": "T001",
@@ -7,7 +8,14 @@
     "affected_users": 23,
     "priority": "high",
     "status": "open",
-    "assigned_to": "Mathias"
+    "assigned_to": "Mathias",
+    "notes": [
+      {
+        "note_id": "N001",
+        "author": "faith",
+        "message": "i want this updated"
+      }
+    ]
   },
   {
     "id": "T002",
@@ -17,7 +25,8 @@
     "affected_users": 1,
     "priority": "low",
     "status": "open",
-    "assigned_to": null
+    "assigned_to": null,
+    "notes": []
   },
   {
     "id": "T003",
@@ -27,7 +36,8 @@
     "affected_users": 1,
     "priority": "high",
     "status": "in_progress",
-    "assigned_to": "Mr. Mathias"
+    "assigned_to": "Mr. Mathias",
+    "notes": []
   },
   {
     "id": "T004",
@@ -37,7 +47,8 @@
     "affected_users": 1,
     "priority": "medium",
     "status": "open",
-    "assigned_to": "Ms Faith"
+    "assigned_to": "Ms Faith",
+    "notes": []
   },
   {
     "id": "T005",
@@ -47,7 +58,8 @@
     "affected_users": 1,
     "priority": "high",
     "status": "in_progress",
-    "assigned_to": "Mr. John"
+    "assigned_to": "Mr. John",
+    "notes": []
   },
   {
     "id": "T006",
@@ -57,7 +69,8 @@
     "affected_users": 1,
     "priority": "medium",
     "status": "in_progress",
-    "assigned_to": "Ms Blessing"
+    "assigned_to": "Ms Blessing",
+    "notes": []
   },
   {
     "id": "T007",
@@ -67,7 +80,8 @@
     "affected_users": 1,
     "priority": "medium",
     "status": "resolved",
-    "assigned_to": "Mr. Emmanuel"
+    "assigned_to": "Mr. Emmanuel",
+    "notes": []
   },
   {
     "id": "T008",
@@ -77,7 +91,8 @@
     "affected_users": 1,
     "priority": "low",
     "status": "in_progress",
-    "assigned_to": "Mr. Gabriel"
+    "assigned_to": "Mr. Gabriel",
+    "notes": []
   },
   {
     "id": "T009",
@@ -87,7 +102,8 @@
     "affected_users": 15,
     "priority": "critical",
     "status": "closed",
-    "assigned_to": "Mr Kingsley"
+    "assigned_to": "Mr Kingsley",
+    "notes": []
   },
   {
     "id": "T010",
@@ -97,7 +113,8 @@
     "affected_users": 10,
     "priority": "critical",
     "status": "closed",
-    "assigned_to": "Mr. God'swill"
+    "assigned_to": "Mr. God'swill",
+    "notes": []
   },
   {
     "id": "T011",
@@ -107,7 +124,8 @@
     "affected_users": 1,
     "priority": "high",
     "status": "open",
-    "assigned_to": "FAITH"
+    "assigned_to": "FAITH",
+    "notes": []
   },
   {
     "id": "T012",
@@ -117,7 +135,8 @@
     "affected_users": 5,
     "priority": "medium",
     "status": "open",
-    "assigned_to": "isaac"
+    "assigned_to": "isaac",
+    "notes": []
   },
   {
     "id": "T013",
@@ -127,6 +146,7 @@
     "affected_users": 10,
     "priority": "critical",
     "status": "open",
-    "assigned_to": null
+    "assigned_to": null,
+    "notes": []
   }
 ]

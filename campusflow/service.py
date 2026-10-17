@@ -1,3 +1,4 @@
+
 from campusflow.tickets import create_ticket
 from campusflow.storage import TicketStorage
 
@@ -22,11 +23,7 @@ class TicketService:
         return self.storage.assign_ticket(ticket_id, staff_name)
 
     def add_note(self, ticket_id, author, message):
-        return self.storage.add_note(
-            ticket_id, 
-            author,
-            message,
-        )
+        return self.storage.add_note(ticket_id, author, message)
 
     def start(self, ticket_id):
         return self.storage.update_status(ticket_id, "in_progress")
@@ -58,6 +55,9 @@ class TicketService:
             assigned_to=assigned_to,
             title=title,
         )
+
+    def get_notes(self, ticket_id):
+        return self.storage.get_notes(ticket_id)
 
     def get_all(self):
         return self.storage.get_all_tickets()

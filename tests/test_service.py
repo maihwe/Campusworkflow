@@ -43,11 +43,13 @@ class TestTicketService(unittest.TestCase):
     def test_add_note(self):
         self.create_ticket()
 
-        note = self.service.add_note(
+        notes = self.service.add_note(
             "T001",
             "Edwin",
             "Checked the network connection",
         )
+
+        note = notes
 
         self.assertEqual(note["note_id"], "N001")
         self.assertEqual(note["author"], "Edwin")
