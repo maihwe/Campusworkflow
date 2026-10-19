@@ -483,6 +483,46 @@ class TestTicketStorage(unittest.TestCase):
             ):
                 TicketStorage(path)
 
+    def test_legacy_duplicate_note_ids_load_and_new_id_is_next(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "tickets.json"
+
+            first_ticket = create_ticket(
+                "T001", "Wi-Fi is down", "Network", "high", 15
+            )
+            second_ticket = create_ticket(
+                "T002", "Printer is broken", "Hardware", "medium", 2
+            )
+
+            first_ticket["notes"] = [
+                {
+                    "note_id": "N001",
+                    "author": "Ada",
+                    "message": "First network update",
+                },
+            ]
+            second_ticket["notes"] = [
+                {
+                    "note_id": "N001",
+                    "author": "Faith",
+                    "message": "Second printer update",
+                },
+            ]
+
+            path.write_text(
+                json.dumps([first_ticket, second_ticket]),
+                encoding="utf-8",
+            )
+
+            storage = TicketStorage(path)
+            new_note = storage.add_note(
+                "T001",
+                "Mathias",
+                "Checking the network again",
+            )
+
+            self.assertEqual(new_note["note_id"], "N002")
+
     def test_invalid_note_message_in_json_is_rejected(self):
         with tempfile.TemporaryDirectory() as folder:
             path = Path(folder) / "tickets.json"
@@ -702,6 +742,39 @@ class TestTicketStorage(unittest.TestCase):
             note["message"],
             "Checked the network connection",
         )
+
+    def test_note_ids_are_unique_across_tickets(self):
+        first_ticket = create_ticket(
+            "T001",
+            "Wi-Fi is down",
+            "Network",
+            "high",
+            15,
+        )
+        second_ticket = create_ticket(
+            "T002",
+            "Printer is broken",
+            "Hardware",
+            "medium",
+            2,
+        )
+
+        self.storage.add_ticket(first_ticket)
+        self.storage.add_ticket(second_ticket)
+
+        first_note = self.storage.add_note(
+            "T001",
+            "Edwin",
+            "First network update",
+        )
+        second_note = self.storage.add_note(
+            "T002",
+            "Ada",
+            "Second printer update",
+        )
+
+        self.assertEqual(first_note["note_id"], "N001")
+        self.assertEqual(second_note["note_id"], "N002")
 
     def test_second_note_gets_next_note_id(self):
         self.storage.add_ticket(self.ticket)

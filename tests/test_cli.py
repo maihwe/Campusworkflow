@@ -306,6 +306,9 @@ class TestUnderstandingCheckCli(CliTestCase):
         self.assertIn("not auto-graded", output)
 
     def test_requires_at_least_two_explanations(self):
+        import tempfile
+        from pathlib import Path
+
         questions = question_bank()
         inputs = [question["answer"] for question in questions]
         inputs.extend(
@@ -317,19 +320,39 @@ class TestUnderstandingCheckCli(CliTestCase):
             ]
         )
 
-        output = run_with_inputs(inputs, run_understanding_check)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temporary_main = str(Path(temp_dir) / "main.py")
 
-        self.assertIn("Please choose at least 2 valid question IDs", output)
-        self.assertIn("Score: 6/6", output)
+            with patch.object(
+                main_module, "__file__", temporary_main
+            ):
+                output = run_with_inputs(
+                    inputs, run_understanding_check
+                )
+
+            explanation_file = (
+                Path(temp_dir) / "data" / "quiz_explanations.txt"
+            )
+
+            self.assertTrue(explanation_file.exists())
+            saved_text = explanation_file.read_text(encoding="utf-8")
+            self.assertIn("Filters combine with AND.", saved_text)
+            self.assertIn(
+                "Memory must not change on a failed load.",
+                saved_text,
+            )
+
         self.assertIn(
-            "Explanations collected for mentor discussion (not saved or auto-graded).",
+            "Please choose at least 2 valid question IDs", output
+        )
+        self.assertIn("Score: 6/6", output)
+        self.assertIn("Explanations saved to", output)
+        self.assertIn(
+            "Explanations are saved for review and are not auto-graded.",
             output,
         )
-
-
 if __name__ == "__main__":
     unittest.main()
-
 
 class TestMenu(unittest.TestCase):
     def test_invalid_choice_is_reported_before_exit(self):
