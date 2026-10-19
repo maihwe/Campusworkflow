@@ -322,7 +322,7 @@ class TestUnderstandingCheckCli(CliTestCase):
         self.assertIn("Please choose at least 2 valid question IDs", output)
         self.assertIn("Score: 6/6", output)
         self.assertIn(
-            "Explanations collected for mentor discussion (not saved or auto-graded).",
+            "Explanations saved to ",
             output,
         )
 
