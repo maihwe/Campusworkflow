@@ -128,7 +128,6 @@ class TicketStorage:
                     raise ValueError(
                         f"Duplicate note ID in JSON storage: {note_id}"
                     )
-
                 if (
                     not isinstance(author, str)
                     or not author.strip()
@@ -288,32 +287,30 @@ class TicketStorage:
 
         notes = ticket.setdefault("notes", [])
         existing_numbers = []
-        seen_note_ids = set()
 
-        for existing_note in notes:
-            if (
-                not isinstance(existing_note, dict)
-                or set(existing_note) != {"note_id", "author", "message"}
-            ):
-                raise ValueError("Invalid existing ticket note")
+        for existing_ticket in self.tickets.values():
+            for existing_note in existing_ticket.get("notes", []):
+                if (
+                    not isinstance(existing_note, dict)
+                    or set(existing_note) != {"note_id", "author", "message"}
+                ):
+                    raise ValueError("Invalid existing ticket note")
 
-            note_id = existing_note["note_id"]
-            note_author = existing_note["author"]
-            note_message = existing_note["message"]
+                note_id = existing_note["note_id"]
+                note_author = existing_note["author"]
+                note_message = existing_note["message"]
 
-            if (
-                not isinstance(note_id, str)
-                or not re.fullmatch(r"N\d{3,}", note_id)
-                or note_id in seen_note_ids
-                or not isinstance(note_author, str)
-                or not note_author.strip()
-                or not isinstance(note_message, str)
-                or not 5 <= len(note_message.strip()) <= 300
-            ):
-                raise ValueError("Invalid existing ticket note")
+                if (
+                    not isinstance(note_id, str)
+                    or not re.fullmatch(r"N\d{3,}", note_id)
+                    or not isinstance(note_author, str)
+                    or not note_author.strip()
+                    or not isinstance(note_message, str)
+                    or not 5 <= len(note_message.strip()) <= 300
+                ):
+                    raise ValueError("Invalid existing ticket note")
 
-            seen_note_ids.add(note_id)
-            existing_numbers.append(int(note_id[1:]))
+                existing_numbers.append(int(note_id[1:]))
 
         next_number = max(existing_numbers, default=0) + 1
 

@@ -306,36 +306,58 @@ class TestUnderstandingCheckCli(CliTestCase):
         self.assertIn("not auto-graded", output)
 
     def test_requires_at_least_two_explanations(self):
+        import tempfile
+        from pathlib import Path
+
         questions = question_bank()
         inputs = [question["answer"] for question in questions]
         inputs.extend(
             [
-                "Q1",
+                "",
                 "Q1,Q2",
                 "Filters combine with AND.",
                 "Memory must not change on a failed load.",
             ]
         )
 
-        output = run_with_inputs(inputs, run_understanding_check)
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temporary_main = str(Path(temp_dir) / "main.py")
 
-        self.assertIn("Please choose at least 2 valid question IDs", output)
-        self.assertIn("Score: 6/6", output)
+            with patch.object(main_module, "__file__", temporary_main):
+                output = run_with_inputs(
+                    inputs, run_understanding_check
+                )
+
+            explanation_file = (
+                Path(temp_dir) / "data" / "quiz_explanations.txt"
+            )
+
+            self.assertTrue(explanation_file.exists())
+            saved_text = explanation_file.read_text(encoding="utf-8")
+            self.assertIn("Filters combine with AND.", saved_text)
+            self.assertIn(
+                "Memory must not change on a failed load.",
+                saved_text,
+            )
+
         self.assertIn(
-            "Explanations saved to ",
+            "Please choose at least 2 valid question IDs", output
+        )
+        self.assertIn("Score: 6/6", output)
+        self.assertIn("Explanations saved to", output)
+        self.assertIn(
+            "Explanations are saved for review and are not auto-graded.",
             output,
         )
 
-
 if __name__ == "__main__":
     unittest.main()
-
 
 class TestMenu(unittest.TestCase):
     def test_invalid_choice_is_reported_before_exit(self):
         memory_storage = TicketStorage()
 
-        with patch("builtins.input", side_effect=["99", "0"]):
+        with patch("builtins.input", side_effect=["99", "0", "y"]):
             with patch("builtins.print") as printed:
                 with patch.object(
                     main_module,
@@ -348,3 +370,71 @@ class TestMenu(unittest.TestCase):
             str(call) for call in printed.call_args_list
         )
         self.assertIn("Invalid option", messages)
+
+    def test_exit_requires_confirmation(self):
+        memory_storage = TicketStorage()
+        prompts = []
+
+        def fake_input(prompt=""):
+            prompts.append(prompt)
+            return {"Choose an option: ": "0",
+                    "Are you sure you want to end the program? y/n: ": "y"}[prompt]
+
+        with patch("builtins.input", side_effect=fake_input):
+            with patch("builtins.print") as printed:
+                with patch.object(
+                    main_module,
+                    "TicketStorage",
+                    return_value=memory_storage,
+                ):
+                    main_module.main()
+
+        self.assertIn(
+            "Are you sure you want to end the program? y/n: ",
+            prompts,
+        )
+        messages = " ".join(
+            str(call) for call in printed.call_args_list
+        )
+        self.assertIn("Thank you for using CampusFlow.", messages)
+
+    def test_cancelling_exit_returns_to_menu(self):
+        memory_storage = TicketStorage()
+
+        with patch("builtins.input", side_effect=["0", "n", "0", "y"]):
+            with patch("builtins.print") as printed:
+                with patch.object(
+                    main_module,
+                    "TicketStorage",
+                    return_value=memory_storage,
+                ):
+                    main_module.main()
+
+        messages = " ".join(
+            str(call) for call in printed.call_args_list
+        )
+        self.assertIn(
+            "Exit cancelled. Returning to the application...",
+            messages,
+        )
+        self.assertIn("Thank you for using CampusFlow.", messages)
+
+    def test_invalid_exit_confirmation_is_rejected(self):
+        memory_storage = TicketStorage()
+
+        with patch("builtins.input", side_effect=["0", "maybe", "y"]):
+            with patch("builtins.print") as printed:
+                with patch.object(
+                    main_module,
+                    "TicketStorage",
+                    return_value=memory_storage,
+                ):
+                    main_module.main()
+
+        messages = " ".join(
+            str(call) for call in printed.call_args_list
+        )
+        self.assertIn(
+            "Invalid response. Please enter y or n.",
+            messages,
+        )
