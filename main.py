@@ -450,6 +450,24 @@ def show_report(service):
     )
 
 
+
+def confirm_exit():
+    while True:
+        answer = input(
+            "Are you sure you want to end the program? y/n: "
+        ).strip().lower()
+
+        if answer == "y":
+            print("Thank you for using CampusFlow.")
+            return True
+
+        if answer == "n":
+            print("Exit cancelled. Returning to the application...")
+            return False
+
+        print("Invalid response. Please enter y or n.")
+
+
 def main():
     storage = TicketStorage(DATA_FILE)
     service = TicketService(storage)
@@ -492,8 +510,9 @@ def main():
         choice = input("Choose an option: ").strip()
 
         if choice == "0":
-            print("Thank you for using CampusFlow.")
-            break
+            if confirm_exit():
+                break
+            continue
 
         if choice not in actions:
             print("Invalid option. Please choose from the menu.")

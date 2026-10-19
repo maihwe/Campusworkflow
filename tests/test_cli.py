@@ -335,7 +335,7 @@ class TestMenu(unittest.TestCase):
     def test_invalid_choice_is_reported_before_exit(self):
         memory_storage = TicketStorage()
 
-        with patch("builtins.input", side_effect=["99", "0"]):
+        with patch("builtins.input", side_effect=["99", "0", "y"]):
             with patch("builtins.print") as printed:
                 with patch.object(
                     main_module,
@@ -348,3 +348,71 @@ class TestMenu(unittest.TestCase):
             str(call) for call in printed.call_args_list
         )
         self.assertIn("Invalid option", messages)
+
+    def test_exit_requires_confirmation(self):
+        memory_storage = TicketStorage()
+        prompts = []
+
+        def fake_input(prompt=""):
+            prompts.append(prompt)
+            return {"Choose an option: ": "0",
+                    "Are you sure you want to end the program? y/n: ": "y"}[prompt]
+
+        with patch("builtins.input", side_effect=fake_input):
+            with patch("builtins.print") as printed:
+                with patch.object(
+                    main_module,
+                    "TicketStorage",
+                    return_value=memory_storage,
+                ):
+                    main_module.main()
+
+        self.assertIn(
+            "Are you sure you want to end the program? y/n: ",
+            prompts,
+        )
+        messages = " ".join(
+            str(call) for call in printed.call_args_list
+        )
+        self.assertIn("Thank you for using CampusFlow.", messages)
+
+    def test_cancelling_exit_returns_to_menu(self):
+        memory_storage = TicketStorage()
+
+        with patch("builtins.input", side_effect=["0", "n", "0", "y"]):
+            with patch("builtins.print") as printed:
+                with patch.object(
+                    main_module,
+                    "TicketStorage",
+                    return_value=memory_storage,
+                ):
+                    main_module.main()
+
+        messages = " ".join(
+            str(call) for call in printed.call_args_list
+        )
+        self.assertIn(
+            "Exit cancelled. Returning to the application...",
+            messages,
+        )
+        self.assertIn("Thank you for using CampusFlow.", messages)
+
+    def test_invalid_exit_confirmation_is_rejected(self):
+        memory_storage = TicketStorage()
+
+        with patch("builtins.input", side_effect=["0", "maybe", "y"]):
+            with patch("builtins.print") as printed:
+                with patch.object(
+                    main_module,
+                    "TicketStorage",
+                    return_value=memory_storage,
+                ):
+                    main_module.main()
+
+        messages = " ".join(
+            str(call) for call in printed.call_args_list
+        )
+        self.assertIn(
+            "Invalid response. Please enter y or n.",
+            messages,
+        )
