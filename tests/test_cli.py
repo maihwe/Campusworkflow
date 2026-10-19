@@ -313,7 +313,7 @@ class TestUnderstandingCheckCli(CliTestCase):
         inputs = [question["answer"] for question in questions]
         inputs.extend(
             [
-                "Q1",
+                "",
                 "Q1,Q2",
                 "Filters combine with AND.",
                 "Memory must not change on a failed load.",
@@ -323,9 +323,7 @@ class TestUnderstandingCheckCli(CliTestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             temporary_main = str(Path(temp_dir) / "main.py")
 
-            with patch.object(
-                main_module, "__file__", temporary_main
-            ):
+            with patch.object(main_module, "__file__", temporary_main):
                 output = run_with_inputs(
                     inputs, run_understanding_check
                 )
@@ -351,6 +349,7 @@ class TestUnderstandingCheckCli(CliTestCase):
             "Explanations are saved for review and are not auto-graded.",
             output,
         )
+
 if __name__ == "__main__":
     unittest.main()
 

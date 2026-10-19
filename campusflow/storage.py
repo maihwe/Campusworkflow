@@ -125,8 +125,9 @@ class TicketStorage:
                     raise ValueError("Invalid note data in JSON storage")
 
                 if note_id in seen_note_ids:
-                    raise ValueError(f"Duplicate note ID: {note_id}")
-
+                    raise ValueError(
+                        f"Duplicate note ID in JSON storage: {note_id}"
+                    )
                 if (
                     not isinstance(author, str)
                     or not author.strip()

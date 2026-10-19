@@ -165,7 +165,7 @@ Menu option 15 provides a six-question multiple-choice check on the application'
 - Each correct answer earns one point out of six.
 - The question bank in `campusflow/understanding_check.py` is separate from the scoring function and the CLI menu loop.
 - After scoring, the learner is asked to explain at least two answers.
-- Explanations are collected during the current session for mentor discussion. They are not automatically graded and are not saved for later sessions.
+- Explanations are appended to `data/quiz_explanations.txt` for mentor discussion. They are saved for review and are not automatically graded.
 
 ## JSON Data File
 
